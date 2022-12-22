@@ -1,0 +1,15 @@
+{
+    "name": "larave-course",
+    "version": "1.0.0",
+    "description": "Laravel course tailwind css",
+    "main": "index.js",
+    "scripts": {
+      "build": "tailwindcss -i ./assets/src/tailwind.css -o ./assets/output/tailwind.css -w"
+    },
+    "keywords": [],
+    "author": "Rasel Ahmed",
+    "license": "ISC",
+    "devDependencies": {
+      "tailwindcss": "^3.0"
+    }
+  }
