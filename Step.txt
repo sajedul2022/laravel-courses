@@ -1,0 +1,200 @@
+----------------- Laravel Courses -----------
+#C-08
+
+1. DB design scheme for planning table, model controller
+https://app.dbdesigner.net/designer/schema/new
+
+2. Install laravel, .env config, create database,  breeze
+
+3. Create Model, migration, controller
+
+php artisan make:model Course -mc
+php artisan make:model Platform -mc
+php artisan make:model Series -mc
+php artisan make:model Topic -mc
+php artisan make:model Author -mc
+
+4. go to  Every migration table created folder and for create field
+and run 
+    php artisan migrate
+
+5. seeding data run function
+
+use App\Models\Series;
+ $series = ['PHP', 'JavaScript', 'WordPress', 'Laravel'];
+
+        foreach ($series as $item){
+            Series::create([
+                'name'=>$item
+            ]);
+        }
+
+
+    then cli:
+     php artisan migrate:fresh --seed
+
+
+6. Create factory
+    php artisan make:factory CourseFactory
+
+   go to  database\factories\CourseFactory.php
+
+use App\Models\Platform;
+use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\Factory;
+
+  public function definition()
+    {
+        return [
+            'name'=>fake()->sentence(),
+            'book' =>rand(0,1),
+            'price'   => rand(0,1) ? rand(1,100) :0.00,
+            'year'  => rand(2010,2021),
+            'image' => fake()->imageUrl(),
+            'description' => fake()->paragraphs(3,true),
+            'link' => fake()->url(),
+            'submitted_by' => User::all()->random()->id,
+            'duration'=> rand(0,2),
+            'platform_id' => Platform::all()->random()->id,
+
+            // 'resources'=> rand(0,10),
+            // 'level_id'    => Level::all()->random()->id,
+        ];
+    }
+}
+
+then cli:
+     php artisan migrate:fresh --seed
+
+
+7. seeding fake data
+
+User::factory(50)->create();
+
+Course::factory(100)->create();;
+
+// Topic table 
+
+        $topics = ['Eloquent','Validation','Refactoring','Testing','Authentication'];
+        foreach ($topics as $topic){
+            Topic::create([
+                'name'=>$topic
+            ]);
+        }
+
+
+then cli:
+     php artisan migrate:fresh --seed
+
+
+8. relation foreign key data multiple relation data show
+
+go to app/Models/Course.php
+
+
+ function platform(){
+        return $this->belongsTo(platform::class);
+    }
+
+go to app\Http\Controllers\CourseController.php
+
+$course = Course::with('platform')->findOrFail($id);
+        return $course;
+
+
+show result: http://localhost:8000/courses/3
+
+
+-------------------- C-8(bonous) -----------------------
+1. relation foreign key data multiple relation data show
+
+*go to app/Models/Course.php
+
+        ### for topics table  ###
+
+public function topics(){
+        return $this->belongsToMany(Topic::class, 'course-topic', 'course_id', 'topic_id');
+    }
+
+*go to database\seeders\DatabaseSeeder.php
+
+//Relation multiple data
+            $courses = Course::all();
+
+            foreach ($courses as $course) {
+                $topic_id_array = Topic::all()->random(rand(1, 5))->pluck('id')->toArray();
+                $course->topics()->attach($topic_id_array);
+
+                
+            }
+
+then cli:
+     php artisan migrate:fresh --seed
+
+
+            //Author seed
+
+            $authors = ['Sajedul', 'Author Name', 'Laraveljobs'];
+            foreach ($authors as $item) {
+                Author::create([
+                    'name' => $item,
+                ]);
+            }
+
+
+
+
+
+** go to app\Http\Controllers\CourseController.php
+
+public function show($id){
+        $course = Course::with('platform', 'topics')->findOrFail($id);
+        return $course;
+    }
+
+
+show result: http://localhost:8000/courses/3
+
+
+
+                     ### for Author table  ###   
+
+1. *go to app/Models/Course.php
+
+public function authors(){
+        return $this->belongsToMany(Author::class, 'course-author', 'course_id', 'author_id');
+    }
+
+2. go to Seeders
+
+ $courses = Course::all();
+
+            foreach ($courses as $course) {
+
+                // topic
+                $topics = Topic::all()->random(rand(1, 5))->pluck('id')->toArray();
+                $course->topics()->attach($topics);
+
+                // author
+
+                $authors = Author::all()->random(rand(1, 3))->pluck('id')->toArray();
+                $course->authors()->attach($authors);
+
+                
+            }
+
+
+then cli:
+     php artisan migrate:fresh --seed
+
+
+
+                ### for course-series table  ###   
+
+1. *go to app/Models/Course.php
+
+ public function series(){
+        return $this->belongsTo(Series::class);
+    }
+
+2. go to Seeders
