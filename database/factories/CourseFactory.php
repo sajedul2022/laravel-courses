@@ -29,9 +29,10 @@ class CourseFactory extends Factory
             'link' => fake()->url(),
             'submitted_by' => User::all()->random()->id,
             'duration'=> rand(0,2),
+            'difficulty_level'=> rand(0,2),
             'platform_id' => Platform::all()->random()->id,
 
-         
+
             // 'level_id'    => Level::all()->random()->id,
         ];
     }

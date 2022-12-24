@@ -15,10 +15,10 @@ php artisan make:model Topic -mc
 php artisan make:model Author -mc
 
 4. go to  Every migration table created folder and for create field
-and run 
+and run
     php artisan migrate
 
-5. seeding data run function
+                    5. seeding data run function
 
 use App\Models\Series;
  $series = ['PHP', 'JavaScript', 'WordPress', 'Laravel'];
@@ -34,7 +34,8 @@ use App\Models\Series;
      php artisan migrate:fresh --seed
 
 
-6. Create factory
+                    6. Create factory
+
     php artisan make:factory CourseFactory
 
    go to  database\factories\CourseFactory.php
@@ -67,13 +68,13 @@ then cli:
      php artisan migrate:fresh --seed
 
 
-7. seeding fake data
+** seeding fake data: sedding file
 
 User::factory(50)->create();
 
 Course::factory(100)->create();;
 
-// Topic table 
+// Topic table
 
         $topics = ['Eloquent','Validation','Refactoring','Testing','Authentication'];
         foreach ($topics as $topic){
@@ -105,12 +106,13 @@ $course = Course::with('platform')->findOrFail($id);
 show result: http://localhost:8000/courses/3
 
 
--------------------- C-8(bonous) -----------------------
-1. relation foreign key data multiple relation data show
+-------------------- C-8(bonous-01) -----------------------
+
+1.  foreign key data multiple relation data show
 
 *go to app/Models/Course.php
 
-        ### for topics table  ###
+        ### fo rmultiple relation data: topics table  ###
 
 public function topics(){
         return $this->belongsToMany(Topic::class, 'course-topic', 'course_id', 'topic_id');
@@ -125,7 +127,7 @@ public function topics(){
                 $topic_id_array = Topic::all()->random(rand(1, 5))->pluck('id')->toArray();
                 $course->topics()->attach($topic_id_array);
 
-                
+
             }
 
 then cli:
@@ -157,7 +159,7 @@ show result: http://localhost:8000/courses/3
 
 
 
-                     ### for Author table  ###   
+                     ### for multiple relation data: Author table  ###
 
 1. *go to app/Models/Course.php
 
@@ -180,7 +182,7 @@ public function authors(){
                 $authors = Author::all()->random(rand(1, 3))->pluck('id')->toArray();
                 $course->authors()->attach($authors);
 
-                
+
             }
 
 
@@ -189,12 +191,259 @@ then cli:
 
 
 
-                ### for course-series table  ###   
+                ### for multiple relation data:  course-series table  ###
 
 1. *go to app/Models/Course.php
 
- public function series(){
-        return $this->belongsTo(Series::class);
+public function series(){
+        return $this->belongsToMany(Series::class, 'course-series', 'course_id', 'series_id');
     }
 
 2. go to Seeders
+
+            $series = Series::all()->random(rand(1, 4))->pluck('id')->toArray();
+            $course->series()->attach($series);
+
+
+3.  go to app\Http\Controllers\CourseController.php
+
+public function show($id){
+        $course = Course::with('platform', 'topics', 'series')->findOrFail($id);
+        return $course;
+    }
+
+
+
+then cli:
+     php artisan migrate:fresh --seed
+
+show result: http://localhost:8000/courses/3
+
+
+
+
+
+
+
+
+                -------------------- C-8(bonous-02) -----------------------
+
+
+
+Template Design -
+clone the project:  https://laravel-courses.com/
+
+Html, Talwindcss  : https://github.com/crazzyboy420/laravel-course.git
+
+1. welcome.blade.php
+
+    <x-guest-layout>
+
+    </x-guest-layout>
+
+2. guest.blade.php
+
+    <body>
+        {{ $slot }}
+    </body>
+
+3. Html template er custom css copy TO resources\css\app.css  (paste)
+
+4. Html template header part  copy TO guest.blade.php (header, footer part  paste)
+
+header
+
+footer
+
+set up in guest.blade.php field
+
+5. welcome.blade.php
+
+<x-guest-layout>
+
+    Here .. set up body content like hero banner, section, email subscription etc.
+
+</x-guest-layout>
+
+6. if need any field add to table like "series table "
+
+** go to: database\migrations\2022_12_22_185640_create_series_table.php
+    $table->string('image'); // add field
+
+**  go to seeder for faker data
+
+    // Series Table
+
+            $series = [
+                [
+                    'name' => 'PHP',
+                    'image' => 'https://cdn.cdnlogo.com/logos/p/79/php.svg',
+                ],
+                [
+                    'name' => 'JavaScript',
+                    'image' => 'https://cdn.cdnlogo.com/logos/j/69/javascript.svg',
+                ],
+                [
+                    'name' => 'WordPress',
+                    'image' => 'https://cdn.cdnlogo.com/logos/w/65/wordpress.svg',
+                ],
+                [
+                    'name' => 'Laravel',
+                    'image' => 'https://cdn.cdnlogo.com/logos/l/56/laravel-wordmark.svg',
+                ]
+            ];
+
+           foreach ($series as $item) {
+                Series::create([
+                    'name' => $item['name'],
+                    'image' => $item['image']
+                ]);
+            }
+
+then cli:
+     php artisan migrate:fresh --seed
+
+7. create home controller
+    php artisan make:controller HomeController
+
+    // go to home controller
+
+    public function home(){
+        return view('welcome');
+    }
+
+// web.php
+    Route::get('/', [HomeController::class, 'home'])->name('home');
+
+
+
+------------- static to dynamic -------------
+
+                ### 8. for "series" static to dynamic in welcome page ###
+
+**go to home controller
+
+public function home(){
+
+        // series
+
+        $series = Series::take(4)->get();
+        // dd($series);
+        return view('welcome',[
+            'series'=> $series
+        ]);
+    }
+
+** welcome page 'series' available as array variable
+
+@foreach($series as $item )
+                <li class="w-full lg:max-w-[165px]">
+                    <a href="#" class="bg-white border mx-auto border-orange box-shadow w-full rounded-lg flex items-center justify-center">
+                        <img src="{{$item->image}}" alt="{{$item->name}}" class="w-20 md:w-auto h-auto object-contain">
+                    </a>
+                </li>
+@endforeach
+
+
+
+                     ###  for "features"/"courses"  html section/welcome page ###
+
+a. HomeController
+
+// feature courses
+        $featureCourses = Course::take(4)->get();
+
+        return view('welcome',[
+            'series'=> $series,
+            'courses'=> $featureCourses,
+        ]);
+
+b. ** welcome page 'courses' available as array variable
+
+   @foreach($courses as $course )
+
+        {{$course->name}}
+
+    @endforeach
+
+                ### c. create author user "submitted_by" foreign key field setup ###
+
+** go to  model folder Course.php
+
+    public function submittedBy(){
+        return $this->belongsTo(User::class, 'submitted_by');
+    }
+
+** welcome page 'submittedBy' available as function
+    {{$course->submittedBy->name}}
+
+
+              ###  d. for "duration" foreign key field setup ###
+
+**go to   database\migrations\2022_12_23_185205_create_courses_table.php
+
+    $table->unsignedBigInteger('duration')->default(0)->comment('0=1-5 hours, 1=5-10 hours, 2=10+ hours');
+
+**  go to  model folder Course.php
+
+    public function duration($value){
+
+        if($value == 1){
+            return "5-10 hours";
+        }elseif($value == 1){
+            return "10+ hours";
+        }else{
+            return "1-5 hours";
+        }
+    }
+
+** welcome page 'duration' available as function
+
+      {{$course->duration($course->duration)}}
+
+
+
+              ###  e. for  Difficulty "Level" foreign key field setup ###
+
+
+1. go to database\migrations\2022_12_23_185205_create_courses_table.php  add new field
+
+    public function up(){
+        Schema::create('courses', function (Blueprint $table) {
+
+            ///...
+            $table->unsignedBigInteger('difficulty_level')->default(0)->comment('0=Beginner, 1=Intermediate, 2=Advanced');
+
+        })
+    }
+
+2. go to database\factories\CourseFactory.php
+
+    public function definition(){
+
+        return [
+
+            // ....
+            'difficulty_level'=> rand(0,2),
+        ]
+    }
+
+3. go to model Course.php
+
+     // difficultyLevel
+
+    public function difficultyLevel($value){
+
+        if($value == 1){
+            return "Intermediate";
+        }elseif($value == 2){
+            return "Advanced";
+        }else{
+            return "Beginner";
+        }
+    }
+
+4. ** welcome page 'difficultyLevel' available as function
+
+      {{$course->difficultyLevel($course->difficulty_level)}}
+

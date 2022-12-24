@@ -54,15 +54,34 @@ class DatabaseSeeder extends Seeder
 
 
             // Series Table
-            $series = ['PHP', 'JavaScript', 'WordPress', 'Laravel'];
+
+            $series = [
+                [
+                    'name' => 'PHP',
+                    'image' => 'https://cdn.cdnlogo.com/logos/p/79/php.svg',
+                ],
+                [
+                    'name' => 'JavaScript',
+                    'image' => 'https://cdn.cdnlogo.com/logos/j/33/javascript.svg',
+                ],
+                [
+                    'name' => 'WordPress',
+                    'image' => 'https://cdn.cdnlogo.com/logos/w/65/wordpress.svg',
+                ],
+                [
+                    'name' => 'Laravel',
+                    'image' => 'https://cdn.cdnlogo.com/logos/l/56/laravel-wordmark.svg',
+                ]
+            ];
 
             foreach ($series as $item) {
                 Series::create([
-                    'name' => $item
+                    'name' => $item['name'],
+                    'image' => $item['image']
                 ]);
             }
 
-            // Topic table 
+            // Topic table
 
             $topics = ['Eloquent', 'Validation', 'Refactoring', 'Testing', 'Authentication'];
             foreach ($topics as $topic) {
@@ -76,22 +95,27 @@ class DatabaseSeeder extends Seeder
             // courses
             Course::factory(100)->create();;
 
-            //Relation multiple data topic and author 
+            //Relation multiple data topic and author
 
             $courses = Course::all();
 
             foreach ($courses as $course) {
 
-                // topic
+                // course-topic
                 $topics = Topic::all()->random(rand(1, 5))->pluck('id')->toArray();
                 $course->topics()->attach($topics);
 
-                // author
+                // course-author
 
                 $authors = Author::all()->random(rand(1, 3))->pluck('id')->toArray();
                 $course->authors()->attach($authors);
 
-                
+                // course-series
+
+                $series = Series::all()->random(rand(1, 4))->pluck('id')->toArray();
+                $course->series()->attach($series);
+
+
             }
 
 
