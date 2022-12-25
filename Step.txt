@@ -669,6 +669,10 @@ $topics = ['Eloquent', 'Validation', 'Refactoring', 'Testing', 'Authentication']
             'password' =>  bcrypt('sajedul@gmail.com'),
         ]);
 
+
+--------------------------------------------------------------------------------------------------
+
+
 --------------------  Class - 11 Single page design: reviews, Author, pagination -------------
 
 
@@ -856,7 +860,108 @@ database\factories\AuthorFactory.php
 
 
 
--------------------- User Login, Register ---------------------------------
+--------------------  Class-11 User Login, Register ---------------------------------
+
+        ## User ##
+1. scheme user table modify
+database\migrations\2014_10_12_000000_create_users_table.php
+
+        //....
+            $table->unsignedBigInteger('type')->default(0)->comment('0=User, 1=Admin');
+        //....
+
+2. database\seeders\DatabaseSeeder.php
+
+    //create admin user
+        User::create([
+            'name' => 'Admin',
+            'email' => 'sajedul@gmail.com',
+            'password' =>  bcrypt('sajedul@gmail.com'),
+            'type' =>  1,
+        ]);
 
 
+then cli:
+     php artisan migrate:fresh --seed
+
+
+
+3. resources\views\auth\login.blade.php
+    <div class="w-96 mx-auto py-12">
+
+        //..code
+
+    </div>
+
+4.resources\views\layouts\guest.blade.php
+
+    @if(Auth::check())
+        <span>Welcome: {{Auth::user()->name}} </span>
+
+                @if(Auth::user()->type === 1)
+                    <a href="{{route('dashboard')}}" class="ml-8 inline-flex items-center justify-center rounded border border-transparent bg-black px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-500">Dashboard</a>
+                @else
+                    <a href="" class="ml-8 inline-flex items-center justify-center rounded border border-transparent bg-black px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-500">Submit a course</a>
+                @endif
+
+            <form class="ml-4" method="POST" action="{{ route('logout') }}"> @csrf
+                <button class="text-red-600" type="submit">Logout</button>
+            </form>
+        @else
+        <a href="{{route('login')}}" class="text-sm font-medium text-gray-500 hover:text-gray-900">
+        Sign in</a>
+        <a href="{{route('register')}}" class="ml-8 inline-flex items-center justify-center rounded border border-transparent bg-black px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-500">Sign up</a>
+    @endif
+
+
+5. web.php
+
+    Route::middleware('auth')->group(function () {
+
+        //...
+        Route::get('/dashboard', [HomeController::class, 'dashboard'])->name('dashboard');
+
+    }
+
+
+6. HomeController
+
+    use Illuminate\Support\Facades\Auth;
+
+    public function dashboard() {
+        if(Auth::user()->type === 1) {
+            return view('dashboard');
+        } else {
+            return redirect()->route('home');
+        }
+    }
+
+
+
+
+--------------------  Class-11 Pagination ---------------------------------
+
+1.app\Http\Controllers\TopicController.php
+
+        public function index($slug){
+
+        $topic = Topic::where('slug', $slug)->first();
+        $courses = $topic->courses()->paginate(12); //paginate
+
+        //return $topic;
+
+        return view('topic.single', [
+            'topic' => $topic,
+            'courses' => $courses
+        ]);
+    }
+
+2. resources\views\topic\single.blade.php
+
+         @foreach($courses as $course)
+                    @include('components.course-box', ['course' => $course])
+                @endforeach
+            </div>
+
+            {{ $courses->links() }}
 

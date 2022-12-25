@@ -20,9 +20,16 @@ class DatabaseSeeder extends Seeder
      *
      * @return void
      */
-    public function run()
-    {
+    public function run(){
 
+        //create admin user
+
+        User::create([
+            'name' => 'Admin',
+            'email' => 'sajedul@gmail.com',
+            'password' =>  bcrypt('sajedul@gmail.com'),
+            'type' =>  1,
+        ]);
 
         // \App\Models\User::factory(10)->create();
 
@@ -31,11 +38,6 @@ class DatabaseSeeder extends Seeder
         //     'email' => 'test@example.com',
         // ]);
 
-        User::create([
-            'name' => 'Sajedul Islam',
-            'email' => 'sajedul@gmail.com',
-            'password' =>  bcrypt('sajedul@gmail.com'),
-        ]);
 
 
 
