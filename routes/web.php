@@ -3,6 +3,7 @@
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TopicController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -18,7 +19,10 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'home'])->name('home');
 
-Route::get('/courses/{id}', [CourseController::class, 'show' ]);
+// course single page
+Route::get('/courses/{slug}', [CourseController::class, 'show' ])->name('course');
+Route::get('/courses', [CourseController::class, 'index' ])->name('courses');
+Route::get('/topics/{slug}', [TopicController::class, 'index' ])->name('topics');
 
 Route::get('/dashboard', function () {
     return view('dashboard');

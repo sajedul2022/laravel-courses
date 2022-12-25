@@ -21,6 +21,7 @@ class CourseFactory extends Factory
         return [
             'name'=>fake()->sentence(),
             'type' =>rand(0,1),
+            'slug' =>fake()->slug(),
             'resources'=> rand(1,50),
             'price'   => rand(0,1) ? rand(1,100) :0.00,
             'year'  => rand(2010,2021),

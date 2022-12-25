@@ -447,3 +447,224 @@ b. ** welcome page 'courses' available as array variable
 
       {{$course->difficultyLevel($course->difficulty_level)}}
 
+
+                --------------------   Class - 10 -----------------------
+------------------------------------------------------------------------------------------------------
+                ### Change Vite To Laravel Mix ###
+
+1.vite.config.js Rename to webpack.mix.js
+
+2. paste the code webpack.mix.js
+
+    const mix = require('laravel-mix');
+
+    mix.js('resources/js/app.js', 'public/js').postCss('resources/css/app.css', 'public/css', [
+        require('postcss-import'),
+        require('tailwindcss'),
+        require('autoprefixer'),
+    ]);
+
+3. package.json  remove vite
+
+{
+    "private": true,
+    "scripts": {
+        "dev": "npm run development",
+        "development": "mix",
+        "watch": "mix watch",
+        "watch-poll": "mix watch -- --watch-options-poll=1000",
+        "hot": "mix watch --hot",
+        "production": "mix --production",
+        "prod": "npm run production"
+
+    },
+    "devDependencies": {
+        "@tailwindcss/forms": "^0.5.2",
+        "alpinejs": "^3.4.2",
+        "autoprefixer": "^10.4.2",
+        "axios": "^1.1.2",
+        "laravel-mix": "^6.0.6",
+        "lodash": "^4.17.19",
+        "postcss": "^8.4.6",
+        "tailwindcss": "^3.1.0"
+    }
+}
+
+4. delete node_modules
+
+ cli:
+    npm install
+    npm run dev
+
+5. change @vite(['resources/css/app.css', 'resources/js/app.js'])  in 2 below file
+
+    resources\views\layouts\guest.blade.php
+    resources\views\layouts\app.blade.php
+
+    {{-- css --}}
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+
+    <!-- Scripts -->
+    <script src="{{ asset('js/app.js') }}" ></script>
+
+6. npm run watch  // any change automatically compile and run
+
+
+        -------------- Single course page design --------------------
+
+1. see web.php
+   // course single page
+Route::get('/courses/{slug}', [CourseController::class, 'show' ])->name('course');
+
+2. use course slug, go to 2022_12_23_185205_create_courses_table
+
+add the field
+    $table->string('slug', 255);
+
+and go to CourseFactory  and add
+    'slug' =>fake()->slug(),
+
+
+    then cli:
+     php artisan migrate:fresh --seed
+
+
+3.go to CourseController.php show method   and set view ;
+
+     public function show($slug){
+        $course = Course::where('slug', $slug)->with('platform', 'topics', 'series')->first();
+
+        return view('course.single',[
+            'course'=> $course,
+        ]);
+    }
+
+
+5.link from welcome.blade.php
+
+    *before create course-box.blade.php  under resources > views> components folder
+    *cut from welcome.blade.php page course elements
+    *paste  course-box.blade.php
+
+    <div class="bg-white rounded grap-10 overflow-hidden shadow-card">
+        //....
+    </div>
+
+and welcome page
+
+     @foreach($courses as $course )
+                @include('components.course-box', ['course'=>$course])
+    @endforeach
+
+and course-box.blade.php
+    *link to page go single.blade.php
+         <a href="{{ route('course', $course->slug) }}">  </a>
+
+** validate slug:  app\Http\Controllers\CourseController.php
+
+    // test view
+        return response()->json($course);
+
+    // wrong page
+        if(empty($course)){
+            return abort(404);
+        }
+
+
+
+
+6.For view create course folder and single.blade.php
+    single.html from specific code copy To single.blade.php
+
+    <x-guest-layout>
+
+        // code..
+
+    </x-guest-layout>
+
+
+customize ingle.blade.php where needed like course price
+    {{$course->price ? '$'. number_format( $course->price, 2 ) : 'Free'}}
+
+
+                 ### for topic table add field "slug" ###
+    --------------------------------------------------------------
+
+** database\migrations\2022_12_22_185723_create_topics_table.php
+         $table->string('slug');
+
+** database\seeders\DatabaseSeeder.php
+$topics = ['Eloquent', 'Validation', 'Refactoring', 'Testing', 'Authentication'];
+            foreach ($topics as $topic) {
+                $slug = strtolower(str_replace(' ', '-', $topic));
+                Topic::create([
+                    'name' => $topic,
+                    'slug'=>$slug
+                ]);
+            }
+
+ then cli:
+     php artisan migrate:fresh --seed
+
+** web.php
+
+    use App\Http\Controllers\TopicController;
+    Route::get('/topics/{slug}', [TopicController::class, 'index' ])->name('topics');
+
+
+** single.blade.php
+     href="{{ route('topics', $topic->slug) }}"
+
+** create function
+
+     public function index($slug){
+
+        $topic = Topic::where('slug', $slug)->with('courses')->first();
+
+        //return $topic;
+
+        return view('topic.single', [
+            'topic' => $topic
+        ]);
+    }
+
+
+** topic model
+
+   public function courses() {
+        return $this->belongsToMany(Course::class, 'course-topic', 'topic_id', 'course_id');
+    }
+
+
+
+** create folder topic under index.blade.php
+
+    <x-guest-layout>
+        <div class="bg-gray mt-1 py-6">
+            <div class="container">
+                <h2 class="text-center font-bold text-2xl mb-6">{{$topic->name}}</h2>
+
+                <div class="max-w-7xl w-full inline-flex single-feature gap-10 flex-wrap mx-auto">
+                    @foreach($topic->courses as $course)
+                        @include('components.course-box', ['course' => $course])
+                    @endforeach
+                </div>
+            </div>
+        </div>
+    </x-guest-layout>
+
+
+
+
+   --------------  course page design --------------------
+
+1. web.php
+    Route::get('/courses', [CourseController::class, 'index' ])->name('courses');
+
+
+2. user name set by seeder
+    User::create([
+            'name' => 'Sajedul Islam',
+            'email' => 'sajedul@gmail.com',
+            'password' =>  bcrypt('sajedul@gmail.com'),
+        ]);

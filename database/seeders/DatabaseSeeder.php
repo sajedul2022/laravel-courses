@@ -30,6 +30,12 @@ class DatabaseSeeder extends Seeder
         //     'email' => 'test@example.com',
         // ]);
 
+        User::create([
+            'name' => 'Sajedul Islam',
+            'email' => 'sajedul@gmail.com',
+            'password' =>  bcrypt('sajedul@gmail.com'),
+        ]);
+
 
 
         // if (env('APP_ENV' == 'local')) {
@@ -85,8 +91,10 @@ class DatabaseSeeder extends Seeder
 
             $topics = ['Eloquent', 'Validation', 'Refactoring', 'Testing', 'Authentication'];
             foreach ($topics as $topic) {
+                $slug = strtolower(str_replace(' ', '-', $topic));
                 Topic::create([
-                    'name' => $topic
+                    'name' => $topic,
+                    'slug'=>$slug
                 ]);
             }
 

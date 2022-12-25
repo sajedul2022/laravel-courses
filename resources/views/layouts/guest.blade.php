@@ -11,8 +11,11 @@
     <!-- Fonts -->
     <link rel="stylesheet" href="https://fonts.bunny.net/css2?family=Nunito:wght@400;600;700&display=swap">
 
+    {{-- css --}}
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     <!-- Scripts -->
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <script src="{{ asset('js/app.js') }}" ></script>
+
 </head>
 
 <body>
@@ -133,7 +136,7 @@
 
 
 
-        
+
         <!--footer bottom -->
         <div class="mx-auto container flex items-center justify-between gap-5 pb-8">
           <ul class="items-center gap-3 z-50 relative">
