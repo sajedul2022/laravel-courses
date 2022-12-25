@@ -668,3 +668,195 @@ $topics = ['Eloquent', 'Validation', 'Refactoring', 'Testing', 'Authentication']
             'email' => 'sajedul@gmail.com',
             'password' =>  bcrypt('sajedul@gmail.com'),
         ]);
+
+--------------------  Class - 11 Single page design: reviews, Author, pagination -------------
+
+
+ "Author" table modification :
+
+1. migrations\2022_12_22_185810_create_authors_table.php
+
+ public function up()
+    {
+        Schema::create('authors', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->string('image');
+            $table->string('twitter_url')->nullable();
+            $table->string('github_url')->nullable();
+            $table->string('website_url')->nullable();
+            $table->text('description')->nullable();
+            $table->timestamps();
+        });
+    }
+
+2. create factory
+    php artisan make:factory AuthorFactory
+database\factories\AuthorFactory.php
+
+    public function definition(){
+        return [
+            'name'=> $this->faker->name(),
+            'image'=> $this->faker->imageUrl(300,300),
+            'twitter_url'=> $this->faker->url(),
+            'github_url'=> $this->faker->url(),
+            'website_url'=> $this->faker->url(),
+            'description'=> $this->faker->paragraph(),
+        ];
+    }
+
+
+
+3. database\seeders\DatabaseSeeder.php
+
+    //Author seed
+            Author::factory(10)->create();
+
+ then cli:
+     php artisan migrate:fresh --seed
+
+4. go to app\Http\Controllers\CourseController.php
+
+    public function show($slug){
+        $course = Course::where('slug', $slug)->with('platform', 'topics', 'series', 'authors')->first();
+        .....
+
+    }
+
+5. go to    app\Models\Course.php for belongsToMany relation with "courses" table with "authors" with "users" table
+
+
+    public function authors(){
+            return $this->belongsToMany(Author::class, 'course-author', 'course_id', 'author_id');
+    }
+
+6. single page
+
+         @foreach ( $course->authors as $author)
+
+            {{$author->name}}
+
+            //...
+
+        @endforeach
+
+
+## Create "Review" model, migratrion, controller, factory  ##
+
+                                    "Review" table:
+
+
+1. php artisan make:model Review -mc
+
+2. migrations\2022_12_25_191103_create_reviews_table.php    scheme design
+
+     public function up(){
+        Schema::create('reviews', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('review_by');
+            $table->text('comment');
+            $table->unsignedBigInteger('star')->default(5);
+            $table->unsignedBigInteger('course_id');
+            $table->timestamps();
+
+            $table->foreign('review_by')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('course_id')->references('id')->on('courses')->onDelete('cascade');
+
+
+        });
+    }
+
+3. create factory
+    php artisan make:factory ReviewFactory
+
+
+    ** go file
+
+    use App\Models\User;
+    use App\Models\Course;
+
+    public function definition(){
+        return [
+            'review_by'=> User::all()->random()->id,
+            'comment'=> $this->faker->paragraph(),
+            'star'=> $this->faker->numberBetween(1,5),
+            'star'=> $this->faker->numberBetween(1,5),
+            'course_id'=> Course::all()->random()->id
+
+        ];
+    }
+
+
+4.  database\seeders\DatabaseSeeder.php
+
+        // review table
+            Review::factory(100)->create();
+
+
+         then cli:
+     php artisan migrate:fresh --seed
+
+
+
+
+5. go to app\Http\Controllers\CourseController.php
+
+  public function show($slug){
+
+        $course = Course::where('slug', $slug)->with('platform', 'topics', 'series', 'authors', 'reviews')->first();
+
+        // test view
+        // return response()->json($course);
+
+        // wrong page
+        if(empty($course)){
+            return abort(404);
+        }
+
+        return view('course.single',[
+            'course'=> $course,
+        ]);
+
+    }
+
+5. go to    app\Models\Course.php  for "hasMany" relation with "courses" table with "reviews" with "users" table
+
+    public function reviews(){
+        return $this->hasMany(Review::class);
+    }
+
+6. another review show by user and comment :  for user Relation
+
+    go to app\Models\Review.php
+
+    public function user(){
+        return $this->belongsTo(User::class,'review_by');
+    }
+
+
+7. go to resources\views\course\single.blade.php
+
+        {{count($course->reviews)}} Review{{count($course->reviews)>1 ? 's' : ''}}
+
+
+        <h2 class="mt-4 pt-4 text-lg font-bold text-gray-900">Reviews</h2>
+
+          @if (count($course->reviews)> 0 )
+                        @foreach ($course->reviews as $review )
+                            <div class="mb-6 bg-white p-4">
+                                <div class="mb-2">{{$review->comment}}</div>
+                                <h4>> Review By: {{$review->user->name}} </h4>
+
+                            </div>
+                        @endforeach
+                    @else
+                        <p class="mt-2 bg-white rounded-sm shadow p-6">No review yet.</p>
+                    @endif
+
+
+
+
+-------------------- User Login, Register ---------------------------------
+
+
+

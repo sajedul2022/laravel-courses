@@ -7,6 +7,7 @@ namespace Database\Seeders;
 use App\Models\Author;
 use App\Models\Course;
 use App\Models\Platform;
+use App\Models\Review;
 use App\Models\Series;
 use App\Models\Topic;
 use App\Models\User;
@@ -49,14 +50,10 @@ class DatabaseSeeder extends Seeder
                     'name' => $platform,
                 ]);
             }
+
             //Author seed
 
-            $authors = ['Sajedul', 'Author Name', 'Laraveljobs'];
-            foreach ($authors as $item) {
-                Author::create([
-                    'name' => $item,
-                ]);
-            }
+            Author::factory(10)->create();
 
 
             // Series Table
@@ -126,6 +123,9 @@ class DatabaseSeeder extends Seeder
 
             }
 
+            // review table
+
+            Review::factory(100)->create();
 
 
 

@@ -30,6 +30,12 @@ class Course extends Model
         return $this->belongsToMany(Series::class, 'course-series', 'course_id', 'series_id');
     }
 
+    public function reviews(){
+        return $this->hasMany(Review::class);
+    }
+
+
+
     // duration
     public function duration($value){
 
